@@ -1,3 +1,6 @@
+started this project using the coding trains flappy bird genetic algorithm.
+The neural network was modified to have a single hidden layer
+https://thecodingtrain.com/CodingChallenges/100.3-neuroevolution-flappy-bird.html
 
 ![image](https://user-images.githubusercontent.com/77860196/118319769-3aa12e80-b4c9-11eb-912c-dadfb73d6ab3.png)
 
