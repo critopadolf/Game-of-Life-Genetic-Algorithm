@@ -1,4 +1,4 @@
-// let m = new Matrix(3,2);
+// var m = new Matrix(3,2);
 
 
 class Matrix {
@@ -9,9 +9,9 @@ class Matrix {
   }
 
   copy() {
-    let m = new Matrix(this.rows, this.cols);
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.cols; j++) {
+    var m = new Matrix(this.rows, this.cols);
+    for (var i = 0; i < this.rows; i++) {
+      for (var j = 0; j < this.cols; j++) {
         m.data[i][j] = this.data[i][j];
       }
     }
@@ -34,9 +34,9 @@ class Matrix {
   }
 
   toArray() {
-    let arr = [];
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.cols; j++) {
+    var arr = [];
+    for (var i = 0; i < this.rows; i++) {
+      for (var j = 0; j < this.cols; j++) {
         arr.push(this.data[i][j]);
       }
     }
@@ -74,8 +74,8 @@ class Matrix {
     return new Matrix(a.rows, b.cols)
       .map((e, i, j) => {
         // Dot product of values in col
-        let sum = 0;
-        for (let k = 0; k < a.cols; k++) {
+        var sum = 0;
+        for (var k = 0; k < a.cols; k++) {
           sum += a.data[i][k] * b.data[k][j];
         }
         return sum;
@@ -99,9 +99,9 @@ class Matrix {
 
   map(func) {
     // Apply a function to every element of matrix
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.cols; j++) {
-        let val = this.data[i][j];
+    for (var i = 0; i < this.rows; i++) {
+      for (var j = 0; j < this.cols; j++) {
+        var val = this.data[i][j];
         this.data[i][j] = func(val, i, j);
       }
     }
@@ -127,7 +127,7 @@ class Matrix {
     if (typeof data == 'string') {
       data = JSON.parse(data);
     }
-    let matrix = new Matrix(data.rows, data.cols);
+    var matrix = new Matrix(data.rows, data.cols);
     matrix.data = data.data;
     return matrix;
   }

@@ -6,33 +6,53 @@
 
 function nextGeneration() {
   console.log('next generation');
+    for(var f = 0; f < birds.length; f++)
+    {
+      birds[f].score = 0;
+      for(var a  = 0; a < allAreas.length; a++)
+      {
+        birds[f].score += birds[f].scores[a];
+      }
+      birds[f].score *= birds[f].score;
+    }
   calculateFitness();
-  for (let i = 0; i < TOTAL; i++) {
+  for (var i = 0; i < TOTAL; i++) {
     birds[i] = pickOne();
+    birds[i].scores = []
+    for(var a = 0; a < allAreas.length; a++)
+    {
+      birds[i].scores.push(0.0);
+    }
   }
-  savedBirds = [];
+  //birds = [];
 }
 
 function pickOne() {
-  let index = 0;
-  let r = random(1);
+  var index = 0;
+  var r = random(1);
   while (r > 0) {
-    r = r - savedBirds[index].fitness;
+    if(index >= birds.length)
+    {
+      index = (int)(random(1,birds.length+1));
+      break;
+    }
+    r = r - birds[index].fitness;
     index++;
   }
   index--;
-  let bird = savedBirds[index];
-  let child = new Bird(bird.brain);
+  var bird = birds[index];
+  //console.log(index);
+  var child = new Bird(birds[index].brain);
   child.mutate();
   return child;
 }
 
 function calculateFitness() {
-  let sum = 0;
-  for (let bird of savedBirds) {
+  var sum = 0;
+  for (var bird of birds) {
     sum += bird.score;
   }
-  for (let bird of savedBirds) {
+  for (var bird of birds) {
     bird.fitness = bird.score / sum;
   }
 }

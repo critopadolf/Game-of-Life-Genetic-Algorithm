@@ -10,76 +10,190 @@
 // Part 4: https://youtu.be/HrvNpbnjEG8
 // Part 5: https://youtu.be/U9wiMM3BqLU
 
-const TOTAL = 500;
+const TOTAL = 100;
+var numAreas = 25;
+var numGens = 100;
+var xw = 10;
+var yw = 10;
+
 var birds = [];
-var savedBirds = [];
-var pipes = [];
 var counter = 0;
 var slider;
-
+var species_slider;
+var allAreas = [];
+var nextAllAreas = [];
+var allAreas0 = [];
+var scl = 15;
+var losses = [];
+var highScore;
+var generation = 0;
 function keyPressed() {
+  /*
   if (key === 'S') {
     var bird = birds[0];
     saveJSON(bird.brain, 'bird.json');
   }
+  */
 }
 
 function setup() {
-  createCanvas(640, 480);
+  
+  
   slider = createSlider(1, 10, 1);
+  species_slider = createSlider(0, TOTAL-1, 1);
+  /*
+  //Example of what a game area looks like
+  //each pixel is a cell represented by a value and a type
+  var gameArea0 = [[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],
+                  [[0,0],  [0,2],[0,0],[0,0],[0,0],[0,2],  [0,0]],
+                  [[0,0],  [0,0],[0,0],[0,1],[0,0],[0,0],  [0,0]], 
+                  [[0,0],  [0,2],[0,0],[0,2],[0,0],[0,2],  [0,0]],
+                  [[0,0],  [0,0],[1,0],[0,1],[0,0],[0,0],  [0,0]],
+                  [[0,0],  [0,2],[0,0],[0,0],[0,0],[0,2],  [0,0]],
+                  [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]];
+  */
+  genMaps();
+  createCanvas(scl*500, 5*scl*20);
+  pixelDensity(1);
+  
   for (var i = 0; i < TOTAL; i++) {
-    birds[i] = new Bird();
+      birds[i] = new Bird();
+      losses.push([]);
+      birds[i].scores = [];
+      for(var j = 0; j < allAreas.length; j++)
+      {
+        losses.push(false);
+        birds[i].scores.push(0.0);
+      }
   }
 }
-
-function draw() {
-  for (var n = 0; n < slider.value(); n++) {
-    if (counter % 75 == 0) {
-      pipes.push(new Pipe());
-    }
-    counter++;
-
-    for (var i = pipes.length - 1; i >= 0; i--) {
-      pipes[i].update();
-
-      for (var j = birds.length - 1; j >= 0; j--) {
-        if (pipes[i].hits(birds[j])) {
-          savedBirds.push(birds.splice(j, 1)[0]);
+function genMaps()
+{
+  for(var g = 0; g < numAreas; g++)
+  {
+    var gameArea0 = []
+    var gameAreas = []
+    for(var x = 0; x < xw; x++)
+    {
+      gameArea0.push([]);
+      for(var y = 0; y < yw; y++)
+      {
+        var r = random();
+        var d = sqrt(x*x + y*y);
+        if(r < 0.35 && d > 3)
+        {
+          gameArea0[x].push([0, 1]);
+        }
+        else if(r < 0.1 && d > 3)
+        {
+          gameArea0[x].push([0,2]);  
+        }
+        else
+        {
+          gameArea0[x].push([0,0]);
         }
       }
+    }
+    gameArea0[1][1] = [0.2,0];
+    gameArea0[2][2] = [0.3,0];
+    for (var i = 0; i < TOTAL; i++) {
+      gameAreas.push(gameArea0);
+    }
+    allAreas.push(_.cloneDeep(gameAreas));
+  }
+  //allAreas0 = _.cloneDeep(allAreas);
+  nextAllAreas = _.cloneDeep(allAreas);
+}
 
-      if (pipes[i].offscreen()) {
-        pipes.splice(i, 1);
+
+function draw() {
+  
+  highScore = 0;
+  var highScoreIndex = 0;
+  for (let n = 0; n < slider.value(); n++) {
+    counter++;
+    for (let i = 0; i < birds.length; i++) {
+      var score = 0;
+      for(var j = 0; j < allAreas.length; j++)
+      {
+        if(!losses[i][j]) {
+          losses[i][j] = birds[i].think(nextAllAreas[j][i],allAreas[j][i],j);
+          allAreas[j][i] = _.cloneDeep(nextAllAreas[j][i]);
+        }
+        score += birds[i].scores[j];
+      } 
+      birds[i].score = score;
+      if(score > highScore)
+      {
+        highScore = score;
+        highScoreIndex = i;
       }
+      
     }
 
-    for (var i = birds.length - 1; i >= 0; i--) {
-      if (birds[i].offScreen()) {
-        savedBirds.push(birds.splice(i, 1)[0]);
+    if (counter === 20) {
+      //allAreas = allAreas0;
+      generation++;
+      console.log("gen: ",generation);
+      if(generation < numGens)
+      {
+        counter = 0;
+        console.log("highscore: ",highScore);
+        allAreas = [];
+        genMaps();
+        nextGeneration();
       }
-    }
-
-    for (var bird of birds) {
-      bird.think(pipes);
-      bird.update();
-    }
-
-    if (birds.length === 0) {
-      counter = 0;
-      nextGeneration();
-      pipes = [];
+      if(generation === numGens)
+      {
+        birds = [birds[highScoreIndex]];
+        numAreas = 1;
+        xw = 100;
+        yw = 100;
+        genMaps();
+      }
     }
   }
-
-  // All the drawing stuff
+  show(highScoreIndex);
+  
+  //show(species_slider.value());
+  //print(frameCount)
+  
+}
+function show(i)
+{
+  resetMatrix();
+  scale(scl);
   background(0);
-
-  for (var bird of birds) {
-    bird.show();
-  }
-
-  for (var pipe of pipes) {
-    pipe.show();
+  //text(highScore, 10, 10, 70, 80);
+  var yx = 0;
+  for(var a = 0; a < allAreas.length; a++)
+  {
+    translate((generation < numGens)*500/(2*scl),0);
+    for(var x = 0; x < allAreas[a][i].length; x++)
+    {
+        for(var y = 0; y < allAreas[a][i][x].length; y++)
+        {
+            if(allAreas[a][i][x][y][1] == 0){
+              stroke(255*allAreas[a][i][x][y][0]);
+            }
+            else if(allAreas[a][i][x][y][1] == 1)
+            {
+              stroke(255,0,0);
+            }
+            else
+            {
+              stroke(40,255,40);
+            }
+            rect(x,y,1,1);
+        }
+    }
+    if((a+1)%5 == 0 && (generation < numGens))
+    {
+      resetMatrix();
+      scale(scl);
+      translate(0,yx*500/(2*scl));
+      yx++;
+    }
   }
 }
 
